@@ -10,7 +10,7 @@ neo4j==5.17.0
 pillow==10.2.0
 sentence-transformers==2.5.1
 matplotlib==3.8.3
-opencv-python==4.9.0.80
+opencv-python-headless==4.9.0.80
 gunicorn==21.2.0
 pandas==2.2.1
 pymilvus==2.4.0
