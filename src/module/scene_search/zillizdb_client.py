@@ -17,6 +17,7 @@ from sentence_transformers import SentenceTransformer
 from urllib import request
 import uuid
 import os
+from pytube import YouTube
 
 class ZillizClient:
     def __init__(self, video_id=None, video_path=None, weight_path=None):
@@ -33,7 +34,11 @@ class ZillizClient:
     def download_video(self, url):
         logger.info("Downloading video from " + url)
         file_name = "src/module/scene_search/videos/" + str(uuid.uuid4()) + ".mp4"
-        request.urlretrieve(url, file_name)
+        if url.find('youtube') != -1:
+            yt_file_name = YouTube(url).streams.first().download("videos/")
+            os.rename(yt_file_name, file_name)
+        else:
+            request.urlretrieve(url, file_name)
         logger.info("Completed downloading from " + url)
         return file_name
     
