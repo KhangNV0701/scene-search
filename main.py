@@ -11,10 +11,10 @@ from sentence_transformers import SentenceTransformer
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
-# @app.on_event("startup")
-# def publish_message():
-#     # SentenceTransformer('clip-ViT-b-32') testing purpose only
-#     SentenceTransformer(zillizCFG.CLIP_MODEL_NAME)
+@app.on_event("startup")
+def publish_message():
+    # SentenceTransformer('clip-ViT-b-32') testing purpose only
+    SentenceTransformer(zillizCFG.CLIP_MODEL_NAME)
 
 origins = ["*"]
 

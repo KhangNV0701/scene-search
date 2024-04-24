@@ -1,4 +1,5 @@
 import time
+from src.utils.logger import logger
 
 from PIL import Image
 import pymilvus
@@ -13,6 +14,9 @@ from src.module.gemini.prompts import PROMPT_PREPROCESS_QUERY
 from src.module.scene_search.keyframe_extraction import KeyframeExtractionModule
 from sentence_transformers import SentenceTransformer
 
+from urllib import request
+import uuid
+import os
 
 class ZillizClient:
     def __init__(self, video_id=None, video_path=None, weight_path=None):
@@ -21,8 +25,21 @@ class ZillizClient:
         self.collection_name = zillizCFG.ZILLIZDB_COLLECTION_NAME
         self.embedding_model = SentenceTransformer(zillizCFG.CLIP_MODEL_NAME)
         self.video_id = video_id
-        self.keyframe_extraction = KeyframeExtractionModule(weight_path=weight_path, video_path=video_path)
+        self.url = video_path
+        self.local_path = self.download_video(video_path)
+        self.keyframe_extraction = KeyframeExtractionModule(weight_path=weight_path, video_path=self.local_path)
         self.client = self.connect_db()
+    
+    def download_video(self, url):
+        logger.info("Downloading video from " + url)
+        file_name = "src/module/scene_search/videos/" + str(uuid.uuid4()) + ".mp4"
+        request.urlretrieve(url, file_name)
+        logger.info("Completed downloading from " + url)
+        return file_name
+    
+    def remove_video(self):
+        logger.info("Removed video from " + self.url)
+        os.remove(self.local_path)
 
     def connect_db(self):
         client = MilvusClient(uri=self.uri,
@@ -58,6 +75,7 @@ class ZillizClient:
         keyframes, frame_pos, video_fps = self.keyframe_extraction.extract_keyframe() 
         records = self.embed_images(keyframes, frame_pos, video_fps)
         self.insert_records(records)
+        logger.info("Completed inserting keyframes")
 
     @retry(stop=(stop_after_delay(30) | stop_after_attempt(3)), wait=wait_fixed(1))
     def call_model_gen_content(self, prompt):
@@ -75,7 +93,7 @@ class ZillizClient:
     
     def vector_search(self, query, limit_num = 10):
         preprocessed_query = self.preprocess_query(query)['query']
-        print(preprocessed_query)
+        # print(preprocessed_query)
         query_emb = self.embedding_model.encode(preprocessed_query).tolist()
         results = self.client.search(
             collection_name = self.collection_name,

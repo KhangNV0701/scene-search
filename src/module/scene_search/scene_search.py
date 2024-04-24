@@ -15,6 +15,7 @@ def insert_video(data):
     # print(video_id, video_path)
     client = call_zillizdb_client(video_id=video_id, video_path=video_path)
     client.process_video()
+    client.remove_video()
 
     response_object = VideoResponseModel(video_id=video_id)
 
