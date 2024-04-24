@@ -27,8 +27,9 @@ class ZillizClient:
         self.embedding_model = SentenceTransformer(zillizCFG.CLIP_MODEL_NAME)
         self.video_id = video_id
         self.url = video_path
-        self.local_path = self.download_video(video_path)
-        self.keyframe_extraction = KeyframeExtractionModule(weight_path=weight_path, video_path=self.local_path)
+        if video_path is not None:
+            self.local_path = self.download_video(video_path)
+            self.keyframe_extraction = KeyframeExtractionModule(weight_path=weight_path, video_path=self.local_path)
         self.client = self.connect_db()
     
     def download_video(self, url):
