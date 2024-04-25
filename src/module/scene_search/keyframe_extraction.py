@@ -59,6 +59,7 @@ class KeyframeExtractionModule:
 
         while True:
             img, patches, status = video_process.next_frame()
+            # print(tmp_pos)
 
             if status is False:
                 print("Failed to read")
@@ -95,6 +96,7 @@ class KeyframeExtractionModule:
                 key_points_2 = point_list[1][:2, matches[1].astype(int)].transpose((1, 0))
 
                 distance = np.mean(np.sqrt(np.sum(np.square(key_points_1 - key_points_2), axis = 1)))
+                # print(distance)
 
                 if distance >= extract_dist:
                     keyframes.append(frames[-1])
@@ -108,6 +110,7 @@ class KeyframeExtractionModule:
                     point_list.pop(1)
                     desc_list.pop(1)
                     tmp_pos.pop(1)
+        print(len(keyframes))
         if len(keyframes) == 0 and len(frames) > 0:
             keyframes.extend(frames)
             frame_pos.extend(tmp_pos)

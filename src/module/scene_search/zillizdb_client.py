@@ -30,13 +30,15 @@ class ZillizClient:
         if video_path is not None:
             self.local_path = self.download_video(video_path)
             self.keyframe_extraction = KeyframeExtractionModule(weight_path=weight_path, video_path=self.local_path)
+        # self.keyframe_extraction = KeyframeExtractionModule(weight_path=weight_path, video_path=video_path)
         self.client = self.connect_db()
     
     def download_video(self, url):
         logger.info("Downloading video from " + url)
         file_name = "src/module/scene_search/videos/" + str(uuid.uuid4()) + ".mp4"
         if url.find('youtube') != -1:
-            yt_file_name = YouTube(url).streams.first().download("videos/")
+            yt_file_name = YouTube(url).streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first().download("videos/")
+            # yt_file_name = YouTube(url).streams.first().download("videos/")
             os.rename(yt_file_name, file_name)
         else:
             request.urlretrieve(url, file_name)
@@ -75,6 +77,7 @@ class ZillizClient:
                 'image_path': "colab_only"
             }
             records.append(record)
+        print(len(records))
         return records
 
     def process_video(self):
