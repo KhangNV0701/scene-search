@@ -19,6 +19,8 @@ import uuid
 import os
 from pytube import YouTube
 
+from collections import defaultdict
+
 class ZillizClient:
     def __init__(self, video_id=None, video_path=None, weight_path=None):
         self.uri = f'https://{zillizCFG.ZILLIZDB_HOST}:{zillizCFG.ZILLIZDB_PORT}'
@@ -100,7 +102,7 @@ class ZillizClient:
         generated_content = self.call_model_gen_content(formatted_prompt)
         return generated_content
     
-    def vector_search(self, query, limit_num = 10):
+    def vector_search(self, query, limit_num = 20):
         preprocessed_query = self.preprocess_query(query)['query']
         # print(preprocessed_query)
         query_emb = self.embedding_model.encode(preprocessed_query).tolist()
@@ -115,4 +117,26 @@ class ZillizClient:
             output_fields = ["time_frame", "video_id"],
             filter = f"video_id == {self.video_id}"
         )
+
         return results
+
+    def filter_result(self, results):
+        processed_results = []
+        unrelevant_threshold = 0.2
+        timeframe_cnt = defaultdict(int)
+
+        for item in results:
+            # print(item)
+            time_frame=item['entity']['time_frame']
+            video_id=str(item['entity']['video_id']) 
+            score=item['distance']
+
+            if score < unrelevant_threshold:
+                break
+                
+            if timeframe_cnt[time_frame] == 0:
+                timeframe_cnt[time_frame] = 1
+                processed_results.append(item)
+        if len(processed_results) > 10:
+            processed_results = processed_results[:10]
+        return processed_results

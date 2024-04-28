@@ -29,6 +29,7 @@ def search_by_text(data):
 
     client = call_zillizdb_client(video_id=str(video_id))
     result = client.vector_search(query)[0]
+    result = client.filter_result(result)
 
     # for time_frame, video_id, score in result:
     #     print(time_frame, video_id, score)
