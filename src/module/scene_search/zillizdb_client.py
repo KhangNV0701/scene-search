@@ -62,7 +62,15 @@ class ZillizClient:
     def reset_db(self):
         self.client.drop_collection(self.collection_name)
 
+    def remove_embedding(self):
+        res = self.client.delete(
+            self.collection_name,
+            filter = f"video_id in [{self.video_id}]"
+        )
+        logger.info(f"Removed {res} embeddings before insert!")
+
     def insert_records(self, records):
+        self.remove_embedding()
         self.client.insert(self.collection_name, records)
 
     def embed_images(self, keyframes, frame_pos, fps):
