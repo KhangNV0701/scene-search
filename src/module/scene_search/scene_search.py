@@ -1,5 +1,8 @@
+import os
+
 from src.module.scene_search.zillizdb_client import ZillizClient
 from src.models.scene_search_model import SearchResultResponseModel, SearchResultModel, VideoResponseModel
+import requests
 
 def call_zillizdb_client(video_id=None, video_path=None):
     weight_path = 'src/module/scene_search/weight/superpoint.pth'
@@ -16,7 +19,8 @@ def insert_video(data):
     client = call_zillizdb_client(video_id=video_id, video_path=video_path)
     client.process_video()
     client.remove_video()
-
+    api_url = os.environ["SCENE_SEARCH_NOTIFICATION_URL"]
+    requests.post(api_url, json=int(video_id))
     response_object = VideoResponseModel(video_id=video_id)
 
     return {'STATUS': 'SUCCESS',
